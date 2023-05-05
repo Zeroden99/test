@@ -23,7 +23,7 @@ class authControllers{
             if(!correctPassword) return next(createError(400, 'Wrong Credentials'))
             const token = jwt.sign({ id: user._id, email:user.email }, process.env.SECRET_KEY)
             const { password, ...others } = user._doc
-            res.status(200).json(token)
+            res.status(200).json({others, token})
         } catch (e) {
             next(e)
         }
