@@ -7,9 +7,7 @@ const authRoutes = require('./routes/auth')
 const searchRoutes = require('./routes/search')
 const postRoutes = require('./routes/post')
 const commentRoutes = require('./routes/comment')
-
-
-
+const friendRoutes = require('./routes/friend')
 
 dotenv.config()
 
@@ -18,9 +16,7 @@ app.use('/', authRoutes)
 app.use('/', searchRoutes)
 app.use('/', postRoutes)
 app.use('/', commentRoutes)
-
-
-
+app.use('/', friendRoutes)
 
 app.use((e, req, res, next) => {
     const status = e.status || 500
