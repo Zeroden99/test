@@ -58,7 +58,9 @@ class friendsControllers {
         const friend = await User.findOneAndUpdate(
             {
                 _id: userId,
-                friendRequests: {$in: [friendId]},
+                friendRequests: {
+                    $in: [friendId]
+                },
             },
             {
                 $pull: { friendRequests: friendId },

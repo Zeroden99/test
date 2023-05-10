@@ -4,7 +4,7 @@ const { verifyToken, verifyTokenAndAuthorization } = require('../utils/verifyTok
 
 
 router.post('/addPost', verifyToken,postControllers.addPost)
-router.post('/find', verifyToken, postControllers.friendsPost )
+router.post('/find/:id', )
 
 
 module.exports = router

@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const friendsControllers = require('../controllers/friendsControllers')
-const { verifyToken, verifyTokenAndAuthorization } = require('../utils/verifyToken')
+const { verifyToken } = require('../utils/verifyToken')
 
 
 router.post('/friendRequest', verifyToken, friendsControllers.addRequestFriends);

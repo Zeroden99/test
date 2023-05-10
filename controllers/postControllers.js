@@ -1,5 +1,4 @@
 const Post = require('../models/Post');
-const User = require('../models/User');
 const createError = require('../utils/error');
 
 class postControllers {
@@ -29,6 +28,7 @@ class postControllers {
         }
     }
 
+   
 }
 
 module.exports = new postControllers()
