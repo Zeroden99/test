@@ -15,25 +15,20 @@ class postControllers {
     async friendsPost(req, res, next) {
         try {
             const userId = req.user.id
-
-            // знаходимо всіх друзів користувача
             const user = await User.findById(userId);
             const friends = user.friends
-
-            // // знаходимо всі пости друзів з пагінацією
-            const pageSize = 3; // кількість постів на одній сторінці
-            const currentPage = parseInt(req.query.page) || 1; // поточна сторінка (якщо не вказана, то 1)
-
+            const pageSize = 3;
+            const currentPage = parseInt(req.query.page) || 1;
             const friendPosts = await Post.find({ userId: { $in: friends } })
-                .skip((currentPage - 1) * pageSize) // пропускаємо кількість постів, щоб показати поточну сторінку
-                .limit(pageSize); // обмежуємо кількість постів на одній сторінці
+                .skip((currentPage - 1) * pageSize)
+                .limit(pageSize);
 
-            res.send(friendPosts);     
+            res.send(friendPosts);
         } catch (e) {
             next(e)
         }
     }
-   
+
 }
 
 module.exports = new postControllers()
