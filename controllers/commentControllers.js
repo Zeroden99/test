@@ -4,7 +4,7 @@ const createError = require('../utils/error');
 
 class commentControllers {
     async addComment(req, res, next) {
-        const newComment = new Comment({...req.body, userId: req.user.id})
+        const newComment = new Comment({ ...req.body, userId: req.user.id, postId: req.params.postId })
         try {
             const savedComment = await newComment.save()
             res.status(200).json(savedComment)

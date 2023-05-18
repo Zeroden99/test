@@ -6,10 +6,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    googleId: {
+        type: String,
+    },
     login: {
         type: String,
-        required: true,
-        unique: true
     },
     email: {
         type: String,
@@ -18,7 +19,15 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+       
+    },
+    isGoogleUser: {
+      type: Boolean,
+      default: false
+    }, 
+    isFacebookUser: {
+        type: Boolean,
+        default: false
     },
     friendRequests: [
         {
@@ -33,6 +42,6 @@ const UserSchema = new mongoose.Schema({
         },
     ],
     
-})
+}, { timestamps:true })
 
 module.exports = mongoose.model('User', UserSchema)

@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const User = require('../models/User')
 const createError = require('../utils/error');
 
 class postControllers {
@@ -21,7 +22,7 @@ class postControllers {
             const friendPosts = await Post.find({ userId: { $in: friends } })
                 .skip((currentPage - 1) * pageSize)
                 .limit(pageSize);
-
+           
             res.send(friendPosts);
         } catch (e) {
             next(e)
