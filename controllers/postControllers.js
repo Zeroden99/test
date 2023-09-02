@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
-const User = require('../models/User')
+const User = require('../models/User');
+const Comment = require('../models/Comment')
 const createError = require('../utils/error');
 
 class postControllers {
@@ -20,6 +21,7 @@ class postControllers {
             const pageSize = 3;
             const currentPage = parseInt(req.query.page) || 1;
             const friendPosts = await Post.find({ userId: { $in: friends } })
+                .populate('comments')
                 .skip((currentPage - 1) * pageSize)
                 .limit(pageSize);
            
@@ -28,7 +30,11 @@ class postControllers {
             next(e)
         }
     }
-
+    async allPosts(req, res, next) {
+        const Posts = await Post.find({})
+        .populate('comments')
+        res.send(Posts)
+    }
    
 }
 

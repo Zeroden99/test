@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const PostSchema = new mongoose.Schema({
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, // Тип поля - ObjectId
+        ref: 'User',
         required: true,
     },
     title: {
@@ -13,6 +14,10 @@ const PostSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 },
 )
 

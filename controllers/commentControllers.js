@@ -7,6 +7,10 @@ class commentControllers {
         const newComment = new Comment({ ...req.body, userId: req.user.id, postId: req.params.postId })
         try {
             const savedComment = await newComment.save()
+            await Post.updateOne({ _id: req.params.postId },
+                {
+                    $push: {comments: savedComment._id}
+                })
             res.status(200).json(savedComment)
         } catch (e) {
             next(e)

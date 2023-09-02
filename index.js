@@ -10,11 +10,17 @@ const friendRoutes = require('./routes/friend')
 const passport = require('passport');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+
+
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
     saveUninitialized: false
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 dotenv.config()
 
 app.use(cookieParser())
@@ -36,6 +42,7 @@ app.use((e, req, res, next) => {
         message,
     })
 })
+
 
 PORT = process.env.PORT || 8000
 

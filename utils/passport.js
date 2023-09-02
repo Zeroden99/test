@@ -3,9 +3,13 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const User = require('../models/User');
 const jwt = require('jsonwebtoken')
+const tokenService = require('./token')
+
 
 const dotenv = require('dotenv');
 dotenv.config()
+
+
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -16,7 +20,8 @@ passport.use(new GoogleStrategy({
         try {
             const user = await User.findOne({ googleId: profile.id });
             if (user) {
-                const token = jwt.sign({ id: user._id, email: user.email }, process.env.SECRET_KEY)
+                const tokens = tokenService.generateTokens({ id: user._id, email: user.email });
+                await tokenService.saveToken(user.id, tokens.refreshToken);
                 done(null, user);
             } else {
                 const newUser = new User({
@@ -25,7 +30,8 @@ passport.use(new GoogleStrategy({
                     googleId: profile.id,
                     isGoogleUser: true
                 });
-                
+                const tokens = tokenService.generateTokens({ id: newUser._id, email: newUser.email });
+                await tokenService.saveToken(newUser.id, tokens.refreshToken);
                 await newUser.save();
                 done(null, newUser);
             }
