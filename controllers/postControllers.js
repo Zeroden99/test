@@ -32,7 +32,6 @@ class postControllers {
     }
     async allPosts(req, res, next) {
         const Posts = await Post.find({})
-        .populate('comments')
         res.send(Posts)
     }
    
