@@ -43,11 +43,7 @@ class commentControllers {
             if (!comment) {
                 return next(createError(404, 'Comment not found'));
             }
-            const post = await Post.findById(comment.postId)
-            if (!post) {
-                return next(createError(404, 'Post not found'));
-            }
-            if (comment.userId.toString() == req.user.id || post.userId.toString() == req.user.id) {
+            if (comment.userId.toString() == req.user.id) {
                 const updateComm = await Comment.findByIdAndUpdate(req.params.id, {
                     $set: req.body
                 }, 

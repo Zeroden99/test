@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const createError = require('../utils/error');
 const jwt = require('jsonwebtoken')
 const userService =  require('../utils/users')
+const cookieParser = require('cookie-parser');
+
 class authControllers{
     async regUser(req, res, next) {
         // try {
@@ -41,6 +43,20 @@ class authControllers{
             const userData = await userService.loginUser(email, password)
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
             return res.status(200).json(userData)
+        } catch (e) {
+            next(e)
+        }
+    }
+    async updateUser(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const newData = req.body;
+            const result = await userService.updateUser(userId, newData);
+            if (result.success) {
+                res.status(200).json(result);
+            } else {
+                throw createError(400, 'Failed to update user');
+            }
         } catch (e) {
             next(e)
         }

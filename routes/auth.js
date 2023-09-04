@@ -40,6 +40,7 @@ router.get('/auth/facebook/callback',
 
 router.post('/signUp', authControllers.regUser)
 router.post('/signIn', authControllers.loginUser)
+router.put('/update', authControllers.updateUser)
 router.post('/logout', authControllers.logout)
 
 

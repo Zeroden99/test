@@ -26,6 +26,14 @@ class UserService {
         await tokenService.saveToken(user.id, tokens.refreshToken)
         return ({...tokens, user: user.id})
     }
+    async updateUser(userId, newData) {
+        if (userId == newData._id) {
+            const updateUser = await User.findByIdAndUpdate(userId, newData, { new: true });
+            return {  user: updateUser };
+        } else {
+            throw createError(403, 'Its not your account')
+        }
+    }
     async logout(refreshToken) {
         const token = await tokenService.removeToken(refreshToken)
         return token

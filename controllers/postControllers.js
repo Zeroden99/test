@@ -13,6 +13,42 @@ class postControllers {
             next(e)
         }
     }
+    async updatePost(req, res, next) {
+        try {
+        const post = await Post.findById(req.params.id)
+        if (!post) {
+            createError(404, 'Post not found')
+        }
+        if (post.userId.toString() == req.user.id) {
+            const updatePost = await Post.findByIdAndUpdate(req.params.id, {
+                    $set: req.body
+                },
+                    { new: true }
+                )
+            res.status(200).json(updatePost)
+        } else {
+            return next(createError(403, 'You can update only your post'))  
+        } 
+        } catch (e) {
+            next(e)
+        }
+    }
+    async deletePost(req, res, next) {
+        try {
+            const post = await Post.findById(req.params.id)
+            if (!post) {
+                createError(404, 'Post not found')
+            }
+            if (post.userId.toString() == req.user.id) {
+                const updatePost = await Post.findByIdAndDelete(req.params.id)
+                res.status(200).json('Post Deleted')
+            } else {
+                return next(createError(403, 'You can Delete only your post'))
+            }
+        } catch (e) {
+            next(e)
+        }
+    }
     async friendsPost(req, res, next) {
         try {
             const userId = req.user.id
@@ -21,7 +57,6 @@ class postControllers {
             const pageSize = 3;
             const currentPage = parseInt(req.query.page) || 1;
             const friendPosts = await Post.find({ userId: { $in: friends } })
-                .populate('comments')
                 .skip((currentPage - 1) * pageSize)
                 .limit(pageSize);
            
