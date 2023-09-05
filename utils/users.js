@@ -14,8 +14,8 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3)
         const user = await User.create({ ...userData, password: hashPassword })
         const tokens = tokenService.generateTokens({id: user._id, email: user.email})
-        
-        return { ...tokens , user: user}
+        const { password: pass, ...others } = user._doc
+        return { ...tokens, user: others }
     }
     async loginUser(email, password) {
         const user = await User.findOne({ email })

@@ -8,10 +8,13 @@ const PostSchema = new mongoose.Schema({
     },
     title: {
         type: String,
+        minlength: 3,
+        maxlength: 18,
         required: true,
     },
     desc: {
         type: String,
+        minlength: 10,
         required: true,
     },
     comments: [{

@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        minlength: 3,
+        maxlength: 18,
         unique: true
     },
     googleId: {
@@ -15,11 +18,15 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: validator.isEmail,
+            message: 'Email is not correct'
+        }
     },
     password: {
         type: String,
-       
+        minlength: 6,
     },
     isGoogleUser: {
       type: Boolean,
