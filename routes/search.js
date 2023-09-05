@@ -3,7 +3,7 @@ const searchControllers = require('../controllers/searchControllers')
 const { verifyToken } = require('../utils/verifyToken')
 
 
-router.post('/search', verifyToken, searchControllers.searchUser)
+router.get('/search', verifyToken, searchControllers.searchUser)
 router.post('/ss', )
 
 
