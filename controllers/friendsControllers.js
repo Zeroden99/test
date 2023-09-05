@@ -73,6 +73,22 @@ class friendsControllers {
 
         res.status(200).send(friend);
     }
+    async friends(req, res, next) {
+        try {
+            const user = await User.findById(req.user.id).populate({
+                path: 'friends',
+                select: 'username email',
+            })
+            if (user) {
+                const friends = user.friends
+                res.send(friends)
+            } else {
+                return next(createError(400, 'User Not Found'))
+            }
+        } catch (e) {
+            next(e)
+        }        
+    }
 }
 
 module.exports = new friendsControllers()

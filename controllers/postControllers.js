@@ -66,8 +66,9 @@ class postControllers {
         }
     }
     async allPosts(req, res, next) {
-        const Posts = await Post.find({})
-        res.send(Posts)
+        const user = await User.findById(req.user.id)
+        const posts = await Post.find({userId: user.id})
+        res.send(posts)
     }
    
 }

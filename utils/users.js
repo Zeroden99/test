@@ -14,7 +14,7 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3)
         const user = await User.create({ ...userData, password: hashPassword })
         const tokens = tokenService.generateTokens({id: user._id, email: user.email})
-        await tokenService.saveToken(user.id, tokens.refreshToken)
+        
         return { ...tokens , user: user}
     }
     async loginUser(email, password) {
@@ -23,7 +23,7 @@ class UserService {
         const correctPassword = await bcrypt.compare(password, user.password)
         if (!correctPassword) throw createError(400, 'Wrong Credentials')
         const tokens = tokenService.generateTokens({ id: user._id, email: user.email })
-        await tokenService.saveToken(user.id, tokens.refreshToken)
+        
         return ({...tokens, user: user.id})
     }
     async updateUser(userId, newData) {
