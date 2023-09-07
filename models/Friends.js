@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const FriendsSchema = new mongoose.Schema({
     userRequestId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.SchemaTypes.ObjectId,
         ref: 'User'
     },
     userReceiveId: {
@@ -11,7 +11,7 @@ const FriendsSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected'],
+        enum: ['pending', 'accepted'],
         default: 'pending',
     },
 }, {timestamps: true })

@@ -16,48 +16,14 @@ class friendsControllers {
             if (userReceiveId !== userReceive._id.toString()) {
                 return res.status(404).json({ message: 'User not found' });
             }
-            const alreadyReject = await Friends.findOneAndUpdate({
-                $or: [{
-                    userRequestId: userRequestId,
-                    userReceiveId: userReceiveId,
-                    status: 'rejected',
-                }, {
-                    userRequestId: userReceiveId,
-                    userReceiveId: userRequestId,
-                    status: 'rejected',
-                }]
-            }, {status: 'pending' },
-            {new: true});
-            if (alreadyReject) {
-            await alreadyReject.save();
-            }
-            const alreadySent = await Friends.findOne({$or: [{
-                userRequestId: userRequestId,
-                userReceiveId: userReceiveId,
-                status: 'pending',
-            }, {
-                userRequestId: userReceiveId,
-                userReceiveId: userRequestId,
-                status: 'pending',
-            }]});
-            if (alreadySent) {
+            const alreadySent = await Friends.findOne({$or: [
+                { userRequestId: userRequestId, userReceiveId: userReceiveId, }, 
+            { userRequestId: userReceiveId, userReceiveId: userRequestId, }
+        ]});
+            if (alreadySent && alreadySent.status === 'pending') {
                 return next(createError(400, 'Friend request already sent'))
             }
-            if (userReceiveId !== userReceive._id.toString()) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            const alreadyFriends = await Friends.findOne({
-                $or: [{
-                    userRequestId: userRequestId,
-                    userReceiveId: userReceiveId,
-                    status: 'accepted',
-                }, {
-                    userRequestId: userReceiveId,
-                    userReceiveId: userRequestId,
-                    status: 'accepted',
-                }]
-            });
-            if (alreadyFriends) {
+            if (alreadySent && alreadySent.status === 'accepted') {
                 return next(createError(400, 'You already friends'))
             }
             const friendRequest = new Friends({
@@ -75,16 +41,23 @@ class friendsControllers {
     }
     async friendAccepted(req, res, next) {
         try {
-            const friendRequestId = req.params.friendRequestId;
-            
-            const alreadyFriends = await Friends.findOne({
-                friendRequestId: friendRequestId,
-                status: 'pending',
+            const userRequestId = req.user.id
+            const userReceiveId = req.params.userReceiveId
+            const alreadySent = await Friends.findOne({
+                $or: [
+                    { userRequestId: userRequestId, userReceiveId: userReceiveId, },
+                    { userRequestId: userReceiveId, userReceiveId: userRequestId, }
+                ]
             });
-            
-            
-            await Friends.findByIdAndUpdate(friendRequestId, { status: 'accepted' });
+            if(!alreadySent) {
+                return next(createError(400, 'You do not have this request'))
+            }
+            if(alreadySent && alreadySent.status == 'accepted') {
+                return next(createError(400, 'You already friends'))
 
+            }
+            alreadySent.status = 'accepted'
+            await alreadySent.save()
             res.status(200).json({ message: 'Friend request accepted' });
         } catch (error) {
             next(error);
@@ -93,33 +66,47 @@ class friendsControllers {
     }
     async friendRejected(req, res, next) {
         try {
-            const friendRequestId = req.params.friendRequestId;
-            const alreadyFriends = await Friends.findOne({
-                friendRequestId: friendRequestId,
-                status: 'pending',
+            const userRequestId = req.user.id
+            const userReceiveId = req.params.userReceiveId
+            const alreadySent = await Friends.findOne({
+                $or: [
+                    { userRequestId: userRequestId, userReceiveId: userReceiveId, },
+                    { userRequestId: userReceiveId, userReceiveId: userRequestId, }
+                ]
             });
-            if(alreadyFriends) {
-                await alreadyFriends.deleteOne(friendRequestId);
+            if (!alreadySent) {
+                return next(createError(400, 'You do not have this request'))
             }
+            if (alreadySent && alreadySent.status == 'accepted') {
+                return next(createError(400, 'You already friends'))
 
+            }
+            await alreadySent.deleteOne()
             res.status(200).json({ message: 'Friend request rejected' });
         } catch (error) {
             next(error);
         }
     }
     async friends(req, res, next) {
+        const userRequestId = req.user.id
+        const page = parseInt(req.query.page) || 1
+        const perPage = 3
         try {
-            const userRequestId = req.user.id
-            const friends = await Friends.find({
-                $or: [{
-                    userRequestId: userRequestId,
+            
+            const friends = await Friends.find({$or: [{
+                    userRequestId,
                     status: 'accepted',
                 }, {
                     userReceiveId: userRequestId,
                     status: 'accepted',
                 }]
             })
-                .populate('userRequestId', 'username')
+                .skip((page-1) * perPage)
+                .limit(perPage)
+                .populate('userRequestId', 'username') 
+                .populate('userReceiveId', 'username') 
+                .select('userRequestId userReceiveId');
+                
             res.status(200).json(friends)
         } catch (e) {
             next(e)

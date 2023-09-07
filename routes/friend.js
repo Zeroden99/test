@@ -4,8 +4,8 @@ const { verifyToken } = require('../utils/verifyToken')
 
 
 router.post('/friendRequest/:userReceiveId', verifyToken, friendsControllers.addRequestFriends);
-router.post('/acceptFriend/:friendRequestId', verifyToken, friendsControllers.friendAccepted);
-router.post('/rejectFriend/:friendRequestId', verifyToken, friendsControllers.friendRejected);
+router.post('/acceptFriend/:userReceiveId', verifyToken, friendsControllers.friendAccepted);
+router.post('/rejectFriend/:userReceiveId', verifyToken, friendsControllers.friendRejected);
 router.get('/friends', verifyToken, friendsControllers.friends)
 
 
