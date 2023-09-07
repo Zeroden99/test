@@ -88,29 +88,54 @@ class friendsControllers {
         }
     }
     async friends(req, res, next) {
-        const userRequestId = req.user.id
         const page = parseInt(req.query.page) || 1
+        const userId = req.user.id;
         const perPage = 3
         try {
+                const friends = await Friends.find({
+                    $or: [
+                        { userRequestId: userId, status: 'accepted' },
+                        { userReceiveId: userId, status: 'accepted' }
+                    ]
+                });
+                const friendUserIds = friends.map(friend => {
+                    return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
+                });
+
+                const friendProfiles = await User.find({ _id: { $in: friendUserIds } })
+                    .skip((page - 1) * perPage)
+                    .limit(perPage)
+                .select('username');
+
+
+                res.status(200).json(friendProfiles);
             
-            const friends = await Friends.find({$or: [{
-                    userRequestId,
-                    status: 'accepted',
-                }, {
-                    userReceiveId: userRequestId,
-                    status: 'accepted',
-                }]
-            })
-                .skip((page-1) * perPage)
-                .limit(perPage)
-                .populate('userRequestId', 'username') 
-                .populate('userReceiveId', 'username') 
-                .select('userRequestId userReceiveId');
-                
-            res.status(200).json(friends)
         } catch (e) {
             next(e)
         }        
+    }
+    async searchFriends (req, res, next) {
+        const userId = req.user.id;
+        const searchUsername = req.query.name;
+        try {
+            const friends = await Friends.find({
+                $or: [
+                    { userRequestId: userId, status: 'accepted' },
+                    { userReceiveId: userId, status: 'accepted' }
+                ]
+            });
+            const friendUserIds = friends.map(friend => {
+                return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
+            });
+            const friendProfiles = await User.find({
+                 _id: { $in: friendUserIds },
+                username: { $regex: searchUsername, $options: 'i' } 
+                }).select('username');
+
+            res.status(200).json(friendProfiles);
+        } catch (e) {
+            next(e)
+        }
     }
 }
 

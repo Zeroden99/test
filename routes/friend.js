@@ -7,6 +7,7 @@ router.post('/friendRequest/:userReceiveId', verifyToken, friendsControllers.add
 router.post('/acceptFriend/:userReceiveId', verifyToken, friendsControllers.friendAccepted);
 router.post('/rejectFriend/:userReceiveId', verifyToken, friendsControllers.friendRejected);
 router.get('/friends', verifyToken, friendsControllers.friends)
+router.get('/searchFriends', verifyToken, friendsControllers.searchFriends)
 
 
 module.exports = router

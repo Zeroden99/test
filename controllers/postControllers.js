@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Friends = require('../models/Friends'); // Підключення моделі Friends
 const Comment = require('../models/Comment')
 const createError = require('../utils/error');
 
@@ -52,15 +53,26 @@ class postControllers {
     async friendsPost(req, res, next) {
         try {
             const userId = req.user.id
-            const user = await User.findById(userId);
-            const friends = user.friends
             const pageSize = 3;
             const currentPage = parseInt(req.query.page) || 1;
-            const friendPosts = await Post.find({ userId: { $in: friends } })
+            const friends = await Friends.find({
+                $or: [
+                    { userRequestId: userId, status: 'accepted' },
+                    { userReceiveId: userId, status: 'accepted' }
+                ]
+            });
+
+            // Отримати ідентифікатори користувачів-друзів
+            const friendUserIds = friends.map(friend => {
+                return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
+            });
+
+            // Знайти всі пости, створені друзями (користувачами-друзями)
+            const friendPosts = await Post.find({
+                userId: { $in: friendUserIds }})
                 .skip((currentPage - 1) * pageSize)
                 .limit(pageSize);
-           
-            res.send(friendPosts);
+            res.status(200).json(friendPosts);
         } catch (e) {
             next(e)
         }
