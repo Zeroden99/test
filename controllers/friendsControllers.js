@@ -137,6 +137,31 @@ class friendsControllers {
             next(e)
         }
     }
+    async friendsRequest(req, res, next) {
+        const page = req.query.page || 1
+        const userId = req.user.id;
+        const perPage = 3
+        try {
+            const friends = await Friend.find({
+                $or: [
+                    { userRequestId: userId, status: 'pending' },
+                    { userReceiveId: userId, status: 'pending' }
+                ]
+            });
+            const friendUserIds = friends.map(friend => {
+                return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
+            });
+
+            const friendProfiles = await User.find({ _id: { $in: friendUserIds } })
+                .skip((page - 1) * perPage)
+                .limit(perPage)
+                .select('username');
+            res.status(200).json(friendProfiles);
+
+        } catch (e) {
+            next(e)
+        }
+    }
 }
 
 module.exports = new friendsControllers()
