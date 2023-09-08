@@ -1,6 +1,6 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
-const Friends = require('../models/Friends'); // Підключення моделі Friends
+const Friend = require('../models/Friend'); 
 const Comment = require('../models/Comment')
 const createError = require('../utils/error');
 
@@ -55,19 +55,15 @@ class postControllers {
             const userId = req.user.id
             const pageSize = 3;
             const currentPage = parseInt(req.query.page) || 1;
-            const friends = await Friends.find({
+            const friends = await Friend.find({
                 $or: [
                     { userRequestId: userId, status: 'accepted' },
                     { userReceiveId: userId, status: 'accepted' }
                 ]
             });
-
-            // Отримати ідентифікатори користувачів-друзів
             const friendUserIds = friends.map(friend => {
                 return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
             });
-
-            // Знайти всі пости, створені друзями (користувачами-друзями)
             const friendPosts = await Post.find({
                 userId: { $in: friendUserIds }})
                 .skip((currentPage - 1) * pageSize)
@@ -77,12 +73,42 @@ class postControllers {
             next(e)
         }
     }
-    async allPosts(req, res, next) {
+    async myPosts(req, res, next) {
         const user = await User.findById(req.user.id)
         const posts = await Post.find({userId: user.id})
         res.send(posts)
     }
-   
+    async userPosts(req, res, next) {
+        const user = await User.findById(req.params.id)
+        const posts = await Post.find({ userId: user.id })
+        res.send(posts)
+    }
+    async allPosts(req, res, next) {
+        const userId = req.user.id
+        const pageSize = 3
+        const currentPage = req.query.page || 1
+        try {
+            const friends = await Friend.find({
+                $or: [
+                    { userRequestId: userId, status: 'accepted' },
+                    { userReceiveId: userId, status: 'accepted' }
+                ]
+            })
+            const friendUserIds = friends.map(friend => {
+                return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
+            });
+            friendUserIds.push(userId);
+            const friendPosts = await Post.find({
+                userId: { $in: friendUserIds }
+            })
+            .skip((currentPage - 1) * pageSize)
+            .limit(pageSize)
+            
+            res.status(200).json(friendPosts);
+        } catch (e) {
+            next(e)
+        }
+    }
 }
 
 module.exports = new postControllers()

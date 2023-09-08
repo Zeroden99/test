@@ -1,4 +1,4 @@
-const Friends = require('../models/Friends');
+const Friend = require('../models/Friend');
 const createError = require('../utils/error');
 const User = require('../models/User')
 
@@ -16,7 +16,7 @@ class friendsControllers {
             if (userReceiveId !== userReceive._id.toString()) {
                 return res.status(404).json({ message: 'User not found' });
             }
-            const alreadySent = await Friends.findOne({$or: [
+            const alreadySent = await Friend.findOne({$or: [
                 { userRequestId: userRequestId, userReceiveId: userReceiveId, }, 
             { userRequestId: userReceiveId, userReceiveId: userRequestId, }
         ]});
@@ -26,7 +26,7 @@ class friendsControllers {
             if (alreadySent && alreadySent.status === 'accepted') {
                 return next(createError(400, 'You already friends'))
             }
-            const friendRequest = new Friends({
+            const friendRequest = new Friend({
                 userRequestId: userRequest._id,
                 userReceiveId: userReceive._id,
             });
@@ -43,7 +43,7 @@ class friendsControllers {
         try {
             const userRequestId = req.user.id
             const userReceiveId = req.params.userReceiveId
-            const alreadySent = await Friends.findOne({
+            const alreadySent = await Friend.findOne({
                 $or: [
                     { userRequestId: userRequestId, userReceiveId: userReceiveId, },
                     { userRequestId: userReceiveId, userReceiveId: userRequestId, }
@@ -68,7 +68,7 @@ class friendsControllers {
         try {
             const userRequestId = req.user.id
             const userReceiveId = req.params.userReceiveId
-            const alreadySent = await Friends.findOne({
+            const alreadySent = await Friend.findOne({
                 $or: [
                     { userRequestId: userRequestId, userReceiveId: userReceiveId, },
                     { userRequestId: userReceiveId, userReceiveId: userRequestId, }
@@ -92,7 +92,7 @@ class friendsControllers {
         const userId = req.user.id;
         const perPage = 3
         try {
-                const friends = await Friends.find({
+                const friends = await Friend.find({
                     $or: [
                         { userRequestId: userId, status: 'accepted' },
                         { userReceiveId: userId, status: 'accepted' }
@@ -118,7 +118,7 @@ class friendsControllers {
         const userId = req.user.id;
         const searchUsername = req.query.name;
         try {
-            const friends = await Friends.find({
+            const friends = await Friend.find({
                 $or: [
                     { userRequestId: userId, status: 'accepted' },
                     { userReceiveId: userId, status: 'accepted' }

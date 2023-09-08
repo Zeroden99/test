@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const FriendsSchema = new mongoose.Schema({
+const FriendSchema = new mongoose.Schema({
     userRequestId: {
-        type: mongoose.SchemaTypes.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     userReceiveId: {
@@ -16,4 +16,4 @@ const FriendsSchema = new mongoose.Schema({
     },
 }, {timestamps: true })
 
-module.exports = mongoose.model('Friends', FriendsSchema)
+module.exports = mongoose.model('Friend', FriendSchema)

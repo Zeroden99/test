@@ -5,7 +5,7 @@ const { verifyToken, verifyTokenAndAuthorization } = require('../utils/verifyTok
 
 router.post('/comment/:postId', verifyToken, commentControllers.addComment)
 router.delete('/comment/:id', verifyToken,commentControllers.deleteComment)
-router.put('/commupd/:id', verifyToken, commentControllers.updateComment)
+router.put('/comment/:id', verifyToken, commentControllers.updateComment)
 router.get('/comment/:postId', commentControllers.getComment)
 
 
