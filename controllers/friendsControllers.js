@@ -49,6 +49,9 @@ class friendsControllers {
                     { userRequestId: userReceiveId, userReceiveId: userRequestId, }
                 ]
             });
+            if (alreadySent.userRequestId.toString() === req.user.id.toString() && alreadySent.status === 'pending') {
+                return next(createError(400, 'You cannot accept a friend request you sent'));
+            }
             if(!alreadySent) {
                 return next(createError(400, 'You do not have this request'))
             }

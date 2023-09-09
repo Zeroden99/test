@@ -5,24 +5,52 @@ const Comment = require('../models/Comment')
 const createError = require('../utils/error');
 
 class postControllers {
-    async addPost(req, res, next) {
-        const newPost = new Post({ userId: req.user.id, ...req.body })
+    async create(req, res, next) {
+        const tag = req.body.tags
+        const tagSplit = tag.split(' ')
+        const { title, desc } = req.body
+        const formHashtags = tagSplit.map(hashtag => {
+            if (!hashtag.startsWith('#')) {
+                return `#${hashtag}`
+            }
+            return hashtag;
+        });
+        // const newPost = new Post({ userId: req.user.id, tags: tagSplit, ...req.body })
         try {
+            const newPost = new Post({
+                userId: req.user.id,
+                title,
+                desc,
+                tags: formHashtags, 
+            });
             const savePost = await newPost.save()
             res.status(200).json(savePost)
         } catch (e) {
             next(e)
         }
     }
-    async updatePost(req, res, next) {
+    async update(req, res, next) {
         try {
+            const tag = req.body.tags
+            const tagSplit = tag.split(' ')
+            const { title, desc } = req.body
+            const formHashtags = tagSplit.map(hashtag => {
+                if (!hashtag.startsWith('#')) {
+                    return `#${hashtag}`
+                }
+                return hashtag
+            });
         const post = await Post.findById(req.params.id)
         if (!post) {
             createError(404, 'Post not found')
         }
         if (post.userId.toString() == req.user.id) {
             const updatePost = await Post.findByIdAndUpdate(req.params.id, {
-                    $set: req.body
+                    $set: {
+                        title: req.body.title,
+                        desc: req.body.desc,
+                        tags: formHashtags
+                    }
                 },
                     { new: true }
                 )
@@ -34,7 +62,7 @@ class postControllers {
             next(e)
         }
     }
-    async deletePost(req, res, next) {
+    async delete(req, res, next) {
         try {
             const post = await Post.findById(req.params.id)
             if (!post) {
@@ -68,7 +96,7 @@ class postControllers {
                 userId: { $in: friendUserIds }})
                 .skip((currentPage - 1) * pageSize)
                 .limit(pageSize);
-            res.status(200).json(friendPosts);
+            res.status(200).json(friendPosts)
         } catch (e) {
             next(e)
         }
@@ -104,11 +132,25 @@ class postControllers {
             .skip((currentPage - 1) * pageSize)
             .limit(pageSize)
             
-            res.status(200).json(friendPosts);
+            res.status(200).json(friendPosts)
+        } catch (e) {
+            next(e)
+        }
+    }
+    async tag(req, res, next) {
+        const tags = req.query.tag
+        const search = tags.map(tag => {
+            if (!tag.startsWith('#')) {
+                tag = `#${tag}`
+            }
+            return { tags: tag }
+        });
+        try {
+            const posts = await Post.find({ $and: search })
+            res.status(200).json(posts)
         } catch (e) {
             next(e)
         }
     }
 }
-
 module.exports = new postControllers()
