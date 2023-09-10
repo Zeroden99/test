@@ -1,28 +1,34 @@
-const Post = require('../models/Post');
-const User = require('../models/User');
-const Friend = require('../models/Friend'); 
+const Post = require('../models/Post')
+const User = require('../models/User')
+const Friend = require('../models/Friend')
 const Comment = require('../models/Comment')
-const createError = require('../utils/error');
+const createError = require('../utils/error')
 
 class postControllers {
     async create(req, res, next) {
-        const tag = req.body.tags
-        const tagSplit = tag.split(' ')
+    //    const tag = req.body.tags
+    //     const tagSplit = tag.split(' ')
         const { title, desc } = req.body
-        const formHashtags = tagSplit.map(hashtag => {
+    //     const formHashtags = tagSplit.map(hashtag => {
+    //         if (!hashtag.startsWith('#')) {
+    //             return `#${hashtag}`
+    //         }
+    //         return hashtag;
+    //     });
+        const tags = req.body.tags ? req.body.tags.split(' ').map(hashtag => {
             if (!hashtag.startsWith('#')) {
                 return `#${hashtag}`
             }
-            return hashtag;
-        });
+            return hashtag
+        }) : []
         // const newPost = new Post({ userId: req.user.id, tags: tagSplit, ...req.body })
         try {
             const newPost = new Post({
                 userId: req.user.id,
                 title,
                 desc,
-                tags: formHashtags, 
-            });
+                tags: tags, 
+            })
             const savePost = await newPost.save()
             res.status(200).json(savePost)
         } catch (e) {
@@ -31,15 +37,12 @@ class postControllers {
     }
     async update(req, res, next) {
         try {
-            const tag = req.body.tags
-            const tagSplit = tag.split(' ')
-            const { title, desc } = req.body
-            const formHashtags = tagSplit.map(hashtag => {
+            const tags = req.body.tags ? req.body.tags.split(' ').map(hashtag => {
                 if (!hashtag.startsWith('#')) {
                     return `#${hashtag}`
                 }
                 return hashtag
-            });
+            }) : []
         const post = await Post.findById(req.params.id)
         if (!post) {
             createError(404, 'Post not found')
@@ -49,7 +52,7 @@ class postControllers {
                     $set: {
                         title: req.body.title,
                         desc: req.body.desc,
-                        tags: formHashtags
+                        tags: tags
                     }
                 },
                     { new: true }
@@ -139,7 +142,8 @@ class postControllers {
     }
     async tag(req, res, next) {
         const tags = req.query.tag
-        const search = tags.map(tag => {
+        const tagsArray = Array.isArray(tags) ? tags : [tags]
+        const search = tagsArray.map(tag => {
             if (!tag.startsWith('#')) {
                 tag = `#${tag}`
             }
