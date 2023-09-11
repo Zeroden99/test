@@ -11,4 +11,5 @@ router.get('/searchFriends', verifyToken, friendsControllers.searchFriends)
 router.get('/request', verifyToken, friendsControllers.friendsRequest)
 
 
+
 module.exports = router

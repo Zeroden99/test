@@ -1,7 +1,7 @@
 const Friend = require('../models/Friend');
 const createError = require('../utils/error');
 const User = require('../models/User')
-
+const mongoose = require('mongoose');
 class friendsControllers {
     async addRequestFriends(req, res, next) {
        
@@ -91,28 +91,67 @@ class friendsControllers {
         }
     }
     async friends(req, res, next) {
-        const page = parseInt(req.query.page) || 1
-        const userId = req.user.id;
-        const perPage = 3
         try {
-                const friends = await Friend.find({
-                    $or: [
-                        { userRequestId: userId, status: 'accepted' },
-                        { userReceiveId: userId, status: 'accepted' }
-                    ]
-                });
-                const friendUserIds = friends.map(friend => {
-                    return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
-                });
-
-                const friendProfiles = await User.find({ _id: { $in: friendUserIds } })
-                    .skip((page - 1) * perPage)
-                    .limit(perPage)
-                .select('username');
-
-
-                res.status(200).json(friendProfiles);
-            
+            const page = parseInt(req.query.page) || 1
+            const perPage = 3
+            const userId = req.user.id;
+            await Friend.aggregate([
+                {
+                    $match: {
+                        $or: [
+                            { userRequestId: new mongoose.Types.ObjectId(userId), status: 'accepted' },
+                            { userReceiveId: new mongoose.Types.ObjectId(userId), status: 'accepted' }
+                        ],
+                        
+                    }
+                },
+                {
+                    $project: {
+                        friendId: {
+                            $cond: {
+                                if: { $eq: ['$userRequestId', new mongoose.Types.ObjectId(userId)] },
+                                then: '$userReceiveId',
+                                else: '$userRequestId'
+                            }
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users', 
+                        localField: 'friendId',
+                        foreignField: '_id',
+                        as: 'friends'
+                    }
+                },
+                {
+                    $unwind: '$friends'
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        username: '$friends.username',
+                        login: '$friends.login'
+                    }
+                },
+                {
+                    $skip: (page - 1) *perPage
+                },
+                {
+                    $limit: perPage
+                }
+            ])
+            .then(friends => {
+                const friendList = friends.map(friend => ({
+                    username: friend.username,
+                    login: friend.login
+                }));
+                res.status(200).json(friendList);
+            })
+            .catch(e => {
+                console.error('error', e)
+                res.status(500).json({ error: 'Server error' })
+            });
         } catch (e) {
             next(e)
         }        
@@ -127,11 +166,11 @@ class friendsControllers {
                     { userReceiveId: userId, status: 'accepted' }
                 ]
             });
-            const friendUserIds = friends.map(friend => {
+            const friendUserId = friends.map(friend => {
                 return friend.userRequestId == userId ? friend.userReceiveId : friend.userRequestId;
             });
             const friendProfiles = await User.find({
-                 _id: { $in: friendUserIds },
+                _id: { $in: friendUserId },
                 username: { $regex: searchUsername, $options: 'i' } 
                 }).select('username');
 

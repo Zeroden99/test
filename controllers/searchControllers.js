@@ -21,14 +21,15 @@ class searchControllers{
         if (result.isEmpty()){
         try {
             const user = await User.find({ username: req.query.username })
-                .select('login email username')
+            .select('login email username')
             if (user.length === 0) return next(createError(404, 'Not Found User'))
             res.status(200).json(user)
 
         } catch (e) {
             next(e)
         }
-        } res.send({ errors: result.array()})
+        } 
+        else { res.send({ errors: result.array() }) }
     }
 }
 
